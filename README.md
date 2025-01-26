@@ -1,17 +1,17 @@
 # ProfilesAPI
 
-ProfilesAPI is a Django RESTful API designed to manage user profiles. Packed with features like user authentication,
-profile viewing, and status updates, it's built on Django REST Framework (DRF) to ensure scalability and simplicity.
+ProfilesAPI is a Django-based RESTful API designed to handle user profiles and their statuses. It provides user authentication, profile management, and a simple system for tracking user statuses. Built on Django REST Framework (DRF), it ensures scalability, security, and ease of integration.
 
 ---
 
 ## 🌟 Features
 
-- **Authentication**: Registration, login, logout, and token-based authentication.
-- **Profile Management**: Retrieve all user profiles or fetch specific ones.
-- **Profile Status**: Track user profile updates via an integrated status system.
-- **Automatic Profile Creation**: A profile is created automatically when a user registers.
-- **Scalable & Secure**: Extensible architecture with integrated DRF tools for smooth API development and scalability.
+- **Authentication**: Registration, login, logout, and token-based authentication via `dj-rest-auth`.
+- **Profile Management**: Retrieve a list of user profiles or access specific profiles using ID.
+- **Profile Status Updates**: Add, update, and retrieve statuses for user profiles.
+- **Automatic Profile Creation**: A user profile is automatically created when a new user is registered.
+- **Secure Permissions**: Enforces strict permissions for users managing profiles and statuses.
+- **Extensible Design**: Built with DRF to ensure scalability and flexibility.
 
 ---
 
@@ -20,11 +20,11 @@ profile viewing, and status updates, it's built on Django REST Framework (DRF) t
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/nikouliciousp/profilesAPI.git
+git clone https://github.com/your-username/profilesAPI.git
 cd profilesAPI
 ```
 
-### 2. Create and Activate a Virtual Environment
+### 2. Setup a Python Virtual Environment
 
 ```bash
 python -m venv venv
@@ -32,76 +32,203 @@ source venv/bin/activate  # On Linux/Mac
 venv\Scripts\activate     # On Windows
 ```
 
-### 3. Install Requirements
+### 3. Install Required Packages
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Apply Migrations and Start the Server
+### 4. Apply Migrations and Run the Development Server
 
 ```bash
 python manage.py migrate
 python manage.py runserver
 ```
 
-Visit the API at [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+- The API will run at **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)**.
+
+---
+
+## 🔑 Authentication
+
+### Register a New User
+
+Create a new user by sending a `POST` request to:
+```
+POST /api/rest-auth/registration/
+``` 
+
+#### Example Payload:
+```json
+{
+  "username": "new_user",
+  "email": "new_user@example.com",
+  "password1": "strongpassword",
+  "password2": "strongpassword"
+}
+```
+
+### Login to Obtain a Token
+
+Log in with your credentials by sending a `POST` request to:
+```
+POST /api/rest-auth/login/
+``` 
+
+#### Example Payload:
+```json
+{
+  "username": "new_user",
+  "password": "strongpassword"
+}
+```
+
+#### Response:
+If successful, you will receive an authentication token:
+
+```json
+{
+  "key": "your_auth_token"
+}
+```
+
+Use this token in the `Authorization` header of your requests:
+
+```http
+Authorization: Token your_auth_token
+```
 
 ---
 
 ## 🔗 API Endpoints
 
-### Authentication
-
-- **Login**: POST `/api/rest-auth/login/`
-- **Logout**: POST `/api/rest-auth/logout/`
-- **Register**: POST `/api/rest-auth/registration/`
-
 ### Profiles
 
-- **List All Profiles**: GET `/api/profiles/`
-- **Retrieve Specific Profile**: GET `/api/profiles/<id>/`
+- **List All Profiles**:  
+  `GET /api/profiles/`
+
+- **Retrieve a Specific Profile**:  
+  `GET /api/profiles/<id>/`
+
+### Profile Status
+
+- **List All Profile Statuses**:  
+  `GET /api/profile-status/`
+
+- **Create a New Profile Status** (requires authentication):  
+  `POST /api/profile-status/`
+
+- **Retrieve a Specific Profile Status**:  
+  `GET /api/profile-status/<id>/`
+
+- **Update a Profile Status** (requires permission):  
+  `PUT /api/profile-status/<id>/`
+
+- **Delete a Profile Status** (requires permission):  
+  `DELETE /api/profile-status/<id>/`
 
 ---
 
 ## 🌐 Example Usage
 
-### Register a New User
+### Retrieve All Profiles
 
-```json
-{
-  "username": "testUser",
-  "email": "testuser@example.com",
-  "password1": "yourpassword",
-  "password2": "yourpassword"
-}
-```
-
-### Retrieve Profiles
-
-1. Obtain a token via the login endpoint.
-2. Access the profiles endpoint with the token:
+Use the following `curl` command to fetch all user profiles:
 
 ```bash
-curl -H "Authorization: Token <YOUR_TOKEN>" http://127.0.0.1:8000/api/profiles/
+curl -H "Authorization: Token your_auth_token" http://127.0.0.1:8000/api/profiles/
+```
+
+### Create a Profile Status
+
+To add a new status for the logged-in user’s profile:
+
+#### Endpoint:
+```
+POST /api/profile-status/
+``` 
+
+#### Example Payload:
+```json
+{
+  "status_content": "Hello, this is my first status!"
+}
 ```
 
 ---
 
 ## 🛠️ Development Notes
 
-- **Email Setup**: The email backend is set to `console` mode for development. Replace it with a production service like
-  SendGrid or SMTP.
-- **Authentication Methods**: Supports SessionAuthentication and TokenAuthentication for secure API access.
+### Automatic Profile Creation
+
+Whenever a new user is registered, a profile is automatically created using Django signals. This is handled by the `signals.py` file in the `profiles` app.
+
+### Email Backend
+
+For development purposes, all email operations (such as registration confirmation emails) are configured to use the console. In `settings.py`:
+
+```python
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+```
+
+You can update this email backend to use a service like **SendGrid**, **Gmail SMTP**, or others for production.
+
+### Authentication Configurations
+
+The application uses **SessionAuthentication** and **TokenAuthentication** for secure API access.
 
 ---
 
-## 📑 Future Enhancements
+## 📑 Future Improvements
 
-- Add edit and delete functionality to profiles.
-- Add pagination for large profile datasets.
-- Implement advanced password validation policies.
+Here are some planned features for future versions:
+
+1. **Pagination**: Implement pagination to handle large datasets of profiles and statuses.
+2. **Enhanced Validation**: Add more advanced validations for registration and profile updates.
+3. **Admin Dashboard**: Provide an admin-friendly interface for managing user profiles and statuses.
+4. **Password Policy**: Strengthen password validation policies (e.g., enforce complexity rules).
+5. **Social Login**: Integrate social authentication (e.g., Google, Facebook).
 
 ---
 
-🎉 Happy coding with ProfilesAPI!
+## 🛡️ Permissions Overview
+
+The system uses custom permissions (`permissions.py`) to enforce secure access:
+
+- **Profiles**:
+  - Users can only update their *own* profile unless they are staff/admin.
+  - Read permissions are open to everyone.
+
+- **Profile Statuses**:
+  - Users can only update or delete their *own* statuses unless they are staff/admin.
+  - Read permissions are open to everyone.
+
+---
+
+## 🧪 Testing the API
+
+You can test the API using different Python scripts included in the project:
+
+### Register and Test User Authentication
+- File: `token-auth-test1.py`  
+  This script performs registration and login testing.
+
+### Test Authorized Profile Access
+- File: `token-auth-test2.py`  
+  Retrieves profiles using token-based authentication.
+
+### Test Profile Status Creation
+- File: `token-auth-test3.py`  
+  Sends requests to create profile statuses.
+
+To run any of these scripts, simply execute them with Python:
+
+```bash
+python token-auth-test1.py
+```
+
+---
+
+### 🎉 **Happy coding with ProfilesAPI!**  
+Feel free to extend, customize, and improve it to fit your specific use case.
+```
